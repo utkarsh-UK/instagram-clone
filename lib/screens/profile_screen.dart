@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../utilities/constants.dart';
 import '../models/user_model.dart';
@@ -39,7 +39,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundImage: user.profileImageUrl.isEmpty
                           ? AssetImage(
                               'assets/images/user_profile_placeholder.png')
-                          : Container(),
+                          : CachedNetworkImageProvider(
+                              user.profileImageUrl,
+                            ),
                     ),
                     Expanded(
                       child: Column(
