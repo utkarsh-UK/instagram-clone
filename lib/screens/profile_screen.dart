@@ -6,6 +6,7 @@ import '../models/user_model.dart';
 import './edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
+  static const String routeName = '/profile-screen';
   final String userId;
 
   ProfileScreen({this.userId});
@@ -18,6 +19,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Instagram',
+          style: TextStyle(
+            color: Colors.black,
+            fontFamily: 'Madame',
+            fontSize: 40.0,
+          ),
+        ),
+        centerTitle: true,
+      ),
       backgroundColor: Colors.white,
       body: FutureBuilder(
         future: userRef.document(widget.userId).get(),
@@ -106,7 +119,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 8.0,
                           ),
                           Container(
-                            width: 250,
+                            width: 200,
+                            height: 25,
                             child: FlatButton(
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,

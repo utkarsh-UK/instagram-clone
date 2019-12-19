@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../screens/activity_screen.dart';
 import '../screens/create_post_screen.dart';
 import '../screens/feed_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/search_screen.dart';
+import '../models/user_data_provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String userId;
-
-  HomeScreen({this.userId});
-  
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -28,19 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = Provider.of<UserData>(context, listen: false).currentUserId;
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          'Instagram',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'Madame',
-            fontSize: 40.0,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: PageView(
         controller: _pageController,
         children: <Widget>[
@@ -49,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CreatePostScreen(),
           ActivityScreen(),
           ProfileScreen(
-            userId: widget.userId,
+            userId: userId,
           ),
         ],
         onPageChanged: (index) => setState(() {
