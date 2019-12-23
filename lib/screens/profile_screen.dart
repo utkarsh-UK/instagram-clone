@@ -122,6 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 200,
                             height: 25,
                             child: FlatButton(
+                              textColor: Colors.white,
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
                               child: Text(

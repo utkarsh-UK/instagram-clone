@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      builder: (_) => UserData(),
+      create: (_) => UserData(),
       child: MaterialApp(
         title: 'Instagram',
         debugShowCheckedModeBanner: false,
