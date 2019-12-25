@@ -1,21 +1,133 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 import '../utilities/constants.dart';
 import '../models/user_model.dart';
 import './edit_profile_screen.dart';
+import '../models/user_data_provider.dart';
+import '../services/database_services.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const String routeName = '/profile-screen';
   final String userId;
+  final String currentUserId;
 
-  ProfileScreen({this.userId});
+  ProfileScreen({this.currentUserId, this.userId});
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool isFollowing = false;
+  int followerCount = 0;
+  int followingCount = 0;
+
+  Future<void> _setIsFollowing() async {
+    bool isFollowingUser = await DatabaseService.isFollowingUser(
+      currentUserId: widget.currentUserId,
+      userId: widget.userId,
+    );
+
+    setState(() {
+      isFollowing = isFollowingUser;
+    });
+  }
+
+  Future<void> _setUpFollower() async {
+    int userFollowerCount = await DatabaseService.numFollowers(widget.userId);
+
+    setState(() {
+      followerCount = userFollowerCount;
+    });
+  }
+
+  Future<void> _setUpFollowing() async {
+    int userFollowingCount = await DatabaseService.numFollowing(widget.userId);
+
+    setState(() {
+      followingCount = userFollowingCount;
+    });
+  }
+
+  _followOrUnfollow() {
+    if (isFollowing) {
+      _unfollowUser();
+    }else {
+      _followUser();
+    }
+  }
+
+  _unfollowUser() {
+    DatabaseService.unfollowUser(widget.currentUserId, widget.userId);
+
+    setState(() {
+      isFollowing = false;
+      followerCount--;
+    });
+  }
+
+  _followUser() {
+    DatabaseService.followUser(widget.currentUserId, widget.userId);
+
+    setState(() {
+      isFollowing = true;
+      followerCount++;
+    });
+  }
+
+  Widget _displayUser(User user) {
+    return user.id != Provider.of<UserData>(context).currentUserId
+        ? Container(
+            width: 200,
+            height: 25,
+            child: FlatButton(
+              textColor: isFollowing ? Colors.black : Colors.white,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              child: Text(
+                isFollowing ? 'Unfollow' : 'Follow',
+                style: TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
+              onPressed: _followOrUnfollow,
+              color: isFollowing ? Colors.grey[200] : Colors.blue,
+            ),
+          )
+        : Container(
+            width: 200,
+            height: 25,
+            child: FlatButton(
+              textColor: Colors.white,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              child: Text(
+                'Edit Profile',
+                style: TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EditProfileScreen(
+                    user: user,
+                  ),
+                ),
+              ),
+              color: Colors.blue,
+            ),
+          );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _setIsFollowing();
+    _setUpFollower();
+    _setUpFollowing();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Column(
                                 children: <Widget>[
                                   Text(
-                                    '645',
+                                    '$followerCount',
                                     style: TextStyle(
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.w600,
@@ -99,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Column(
                                 children: <Widget>[
                                   Text(
-                                    '794',
+                                    '$followingCount',
                                     style: TextStyle(
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.w600,
@@ -118,29 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SizedBox(
                             height: 8.0,
                           ),
-                          Container(
-                            width: 200,
-                            height: 25,
-                            child: FlatButton(
-                              textColor: Colors.white,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              child: Text(
-                                'Edit Profile',
-                                style: TextStyle(
-                                  fontSize: 16.0,
-                                ),
-                              ),
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => EditProfileScreen(
-                                    user: user,
-                                  ),
-                                ),
-                              ),
-                              color: Colors.blue,
-                            ),
-                          ),
+                          _displayUser(user),
                         ],
                       ),
                     ),

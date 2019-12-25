@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/user_model.dart';
 import '../services/database_services.dart';
 import '../screens/profile_screen.dart';
+import '../models/user_data_provider.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -16,6 +18,8 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<QuerySnapshot> _users;
 
   Widget _buildUserTile(User user) {
+    final currentUserId = Provider.of<UserData>(context).currentUserId;
+
     return ListTile(
       leading: CircleAvatar(
         radius: 20.0,
@@ -27,6 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => ProfileScreen(
+            currentUserId: currentUserId,
             userId: user.id,
           ),
         ),

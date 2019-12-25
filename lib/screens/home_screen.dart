@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CreatePostScreen(),
           ActivityScreen(),
           ProfileScreen(
+            currentUserId: userId,
             userId: userId,
           ),
         ],
