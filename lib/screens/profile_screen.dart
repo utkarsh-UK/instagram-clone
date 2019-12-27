@@ -177,7 +177,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Column(
                                 children: <Widget>[
                                   Text(
-                                    '12',
+                                    '0',
                                     style: TextStyle(
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.w600,
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'Followers',
+                                    'Following',
                                     style: TextStyle(
                                       color: Colors.black54,
                                     ),

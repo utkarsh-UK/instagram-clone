@@ -76,7 +76,7 @@ class DatabaseService {
       {String currentUserId, String userId}) async {
     DocumentSnapshot followingDoc = await followersRef
         .document(userId)
-        .collection('userFollower')
+        .collection('userFollowers')
         .document(currentUserId)
         .get();
 

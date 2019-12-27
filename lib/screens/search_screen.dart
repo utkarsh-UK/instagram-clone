@@ -24,7 +24,7 @@ class _SearchScreenState extends State<SearchScreen> {
       leading: CircleAvatar(
         radius: 20.0,
         backgroundImage: user.profileImageUrl.isEmpty
-            ? AssetImage('assets/images/user_profile_placholder.png')
+            ? AssetImage('assets/images/user_profile_placeholder.png')
             : CachedNetworkImageProvider(user.profileImageUrl),
       ),
       title: Text(user.name),

@@ -1,108 +1,95 @@
 import 'package:flutter/material.dart';
 
 import './signup_screen.dart';
-import '../services/auth_services.dart';
+import '../widgets/login_form.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   static const String routeName = '/login-screen';
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String _email;
-  String _password;
-
-  void _submit() {
-    if (_formKey.currentState.validate()) {
-      _formKey.currentState.save();
-      AuthService.login(_email, _password);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Instagram',
-              style: TextStyle(
-                fontSize: 50.0,
-                fontFamily: 'Madame',
+      body: Stack(
+        children: <Widget>[
+          Container(
+            height: double.infinity,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF73AEF5),
+                  Color(0xFF61A4F1),
+                  Color(0xFF4780E0),
+                  Color(0xFF358AE5),
+                ],
+                stops: [0.1, 0.4, 0.7, 0.9],
               ),
             ),
-            Form(
-              key: _formKey,
+          ),
+          Container(
+            height: double.infinity,
+            child: SingleChildScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 40.0,
+                vertical: 50.0,
+              ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30.0,
-                      vertical: 10.0,
-                    ),
-                    child: TextFormField(
-                      decoration: InputDecoration(labelText: 'Email'),
-                      validator: (input) => !input.contains('@')
-                          ? 'Please enter a valid email'
-                          : null,
-                      onSaved: (input) => _email = input,
+                  const Text(
+                    'Instagram',
+                    style: TextStyle(
+                      fontSize: 50.0,
+                      fontFamily: 'Madame',
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30.0,
-                      vertical: 10.0,
-                    ),
-                    child: TextFormField(
-                      decoration: InputDecoration(labelText: 'Password'),
-                      obscureText: true,
-                      validator: (input) => input.length < 8
-                          ? 'Password must be at least 6 characters.'
-                          : null,
-                      onSaved: (input) => _password = input,
+                  SizedBox(height: 50),
+                  const Text(
+                    'Log In',
+                    style: TextStyle(
+                      fontSize: 30.0,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  SizedBox(height: 30.0),
+                  LoginForm(),
                   SizedBox(
-                    height: 20.0,
+                    height: 200.0,
                   ),
-                  Container(
-                    width: 250.0,
-                    child: FlatButton(
-                      child: Text(
-                        'Login',
-                        style: TextStyle(color: Colors.white, fontSize: 18.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      Text(
+                        'Don\'t have an account yet?',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.white,
+                        ),
                       ),
-                      color: Colors.blue,
-                      padding: const EdgeInsets.all(10.0),
-                      onPressed: _submit,
-                    ),
-                  ),
-                  SizedBox(height: 20.0,),
-                  Container(
-                    width: 250.0,
-                    child: FlatButton(
-                      child: Text(
-                        'Signup',
-                        style: TextStyle(color: Colors.white, fontSize: 18.0),
+                      FlatButton(
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        child: Text(
+                          'Sign up',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.0,
+                          ),
+                        ),
+                        onPressed: () => Navigator.pushNamed(
+                            context, SignupScreen.routeName),
                       ),
-                      color: Colors.blue,
-                      padding: const EdgeInsets.all(10.0),
-                      onPressed: () => Navigator.pushNamed(context, SignupScreen.routeName),
-                    ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
