@@ -32,7 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: PageView(
         controller: _pageController,
         children: <Widget>[
-          FeedScreen(currentUserId: userId,),
+          FeedScreen(
+            currentUserId: userId,
+          ),
           SearchScreen(),
           CreatePostScreen(),
           ActivityScreen(),
@@ -46,8 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
         }),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.blue,
+        type: BottomNavigationBarType.shifting,
         currentIndex: _currentIndexTab,
+        showUnselectedLabels: false,
         selectedItemColor: Colors.black,
         iconSize: 30.0,
         unselectedItemColor: Colors.grey,

@@ -7,6 +7,8 @@ import '../models/user_model.dart';
 import './edit_profile_screen.dart';
 import '../models/user_data_provider.dart';
 import '../services/database_services.dart';
+import '../services/auth_services.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   static const String routeName = '/profile-screen';
@@ -23,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isFollowing = false;
   int followerCount = 0;
   int followingCount = 0;
+  int postCount = 0;
 
   Future<void> _setIsFollowing() async {
     bool isFollowingUser = await DatabaseService.isFollowingUser(
@@ -51,10 +54,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _setUpPosts() async {
+    int userPostCount = await DatabaseService.getNumberOfPosts(widget.userId);
+
+    setState(() {
+      postCount = userPostCount;
+    });
+  }
+
   _followOrUnfollow() {
     if (isFollowing) {
       _unfollowUser();
-    }else {
+    } else {
       _followUser();
     }
   }
@@ -126,6 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _setIsFollowing();
     _setUpFollower();
     _setUpFollowing();
+    _setUpPosts();
   }
 
   @override
@@ -177,7 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Column(
                                 children: <Widget>[
                                   Text(
-                                    '0',
+                                    '$postCount',
                                     style: TextStyle(
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.w600,
@@ -265,6 +277,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Divider(),
+                    Center(
+                      child: FlatButton(
+                        color: Colors.blue,
+                        child: Text('Log out'),
+                        onPressed: () => AuthService.logout(),
+                      ),
+                    )
                   ],
                 ),
               ),

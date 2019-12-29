@@ -120,6 +120,15 @@ class DatabaseService {
       return User.fromDoc(userSnapshot);
     }
 
-    return User();
+    return User(id: null, name: null, email: null);
+  }
+
+  static Future<int> getNumberOfPosts(String userId) async {
+    QuerySnapshot postNumberSnapshot = await postRef.document(userId).collection('userPosts').getDocuments();
+    if (postNumberSnapshot.documents.length >= 0) {
+      return postNumberSnapshot.documents.length;
+    }
+
+    return 0;
   }
 }
