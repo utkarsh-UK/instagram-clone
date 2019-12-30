@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:instagram_clone/services/auth_services.dart';
 import 'package:provider/provider.dart';
 
 import '../utilities/constants.dart';
@@ -7,8 +8,8 @@ import '../models/user_model.dart';
 import './edit_profile_screen.dart';
 import '../models/user_data_provider.dart';
 import '../services/database_services.dart';
-import '../services/auth_services.dart';
-
+import '../models/post_model.dart';
+import '../widgets/post_view.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const String routeName = '/profile-screen';
@@ -22,10 +23,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool isFollowing = false;
-  int followerCount = 0;
-  int followingCount = 0;
-  int postCount = 0;
+  bool _isFollowing = false;
+  int _followerCount = 0;
+  int _followingCount = 0;
+  int _displayPosts = 0;
+  User _profileUser;
+  List<Post> _posts = [];
 
   Future<void> _setIsFollowing() async {
     bool isFollowingUser = await DatabaseService.isFollowingUser(
@@ -34,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     setState(() {
-      isFollowing = isFollowingUser;
+      _isFollowing = isFollowingUser;
     });
   }
 
@@ -42,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     int userFollowerCount = await DatabaseService.numFollowers(widget.userId);
 
     setState(() {
-      followerCount = userFollowerCount;
+      _followerCount = userFollowerCount;
     });
   }
 
@@ -50,20 +53,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     int userFollowingCount = await DatabaseService.numFollowing(widget.userId);
 
     setState(() {
-      followingCount = userFollowingCount;
+      _followingCount = userFollowingCount;
     });
   }
 
   Future<void> _setUpPosts() async {
-    int userPostCount = await DatabaseService.getNumberOfPosts(widget.userId);
+    List<Post> userPosts = await DatabaseService.getUserPosts(widget.userId);
 
     setState(() {
-      postCount = userPostCount;
+      _posts = userPosts;
+    });
+  }
+
+  Future<void> _setUpProfileUser() async {
+    User profileUser = await DatabaseService.getUserWithId(widget.userId);
+    setState(() {
+      _profileUser = profileUser;
     });
   }
 
   _followOrUnfollow() {
-    if (isFollowing) {
+    if (_isFollowing) {
       _unfollowUser();
     } else {
       _followUser();
@@ -74,8 +84,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     DatabaseService.unfollowUser(widget.currentUserId, widget.userId);
 
     setState(() {
-      isFollowing = false;
-      followerCount--;
+      _isFollowing = false;
+      _followerCount--;
     });
   }
 
@@ -83,8 +93,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     DatabaseService.followUser(widget.currentUserId, widget.userId);
 
     setState(() {
-      isFollowing = true;
-      followerCount++;
+      _isFollowing = true;
+      _followerCount++;
     });
   }
 
@@ -94,16 +104,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 200,
             height: 25,
             child: FlatButton(
-              textColor: isFollowing ? Colors.black : Colors.white,
+              textColor: _isFollowing ? Colors.black : Colors.white,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               child: Text(
-                isFollowing ? 'Unfollow' : 'Follow',
+                _isFollowing ? 'Unfollow' : 'Follow',
                 style: TextStyle(
                   fontSize: 16.0,
                 ),
               ),
               onPressed: _followOrUnfollow,
-              color: isFollowing ? Colors.grey[200] : Colors.blue,
+              color: _isFollowing ? Colors.grey[200] : Colors.blue,
             ),
           )
         : Container(
@@ -138,6 +148,198 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _setUpFollower();
     _setUpFollowing();
     _setUpPosts();
+    _setUpProfileUser();
+  }
+
+  Column _buildProfile(User user) {
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 0.0),
+          child: Row(
+            children: <Widget>[
+              CircleAvatar(
+                radius: 50.0,
+                backgroundImage: user.profileImageUrl.isEmpty
+                    ? AssetImage('assets/images/user_profile_placeholder.png')
+                    : CachedNetworkImageProvider(
+                        user.profileImageUrl,
+                      ),
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Column(
+                          children: <Widget>[
+                            Text(
+                              '${_posts.length}',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Posts',
+                              style: TextStyle(
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Text(
+                              '$_followerCount',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Followers',
+                              style: TextStyle(
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Text(
+                              '$_followingCount',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Following',
+                              style: TextStyle(
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8.0,
+                    ),
+                    _displayUser(user),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 30.0,
+            vertical: 10.0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                user.name,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                ),
+              ),
+              SizedBox(
+                height: 5.0,
+              ),
+              Container(
+                height: 80,
+                child: Text(
+                  user.bio,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                  ),
+                ),
+              ),
+              Divider(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Row _buildToggleButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        IconButton(
+          icon: Icon(Icons.grid_on),
+          onPressed: () {
+            setState(() {
+              _displayPosts = 0;
+            });
+          },
+          color: _displayPosts == 0
+              ? Theme.of(context).primaryColor
+              : Colors.grey[300],
+        ),
+        IconButton(
+          icon: Icon(Icons.list),
+          onPressed: () {
+            setState(() {
+              _displayPosts = 1;
+            });
+          },
+          color: _displayPosts == 1
+              ? Theme.of(context).primaryColor
+              : Colors.grey[300],
+        ),
+      ],
+    );
+  }
+
+  GridTile _buildTilePost(Post post) {
+    return GridTile(
+      child: Image(
+        image: CachedNetworkImageProvider(post.imageUrl),
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  _buildDisplayPosts() {
+    if (_displayPosts == 0) {
+      // Grid
+      List<GridTile> gridPosts = [];
+      _posts.forEach((post) => gridPosts.add(_buildTilePost(post)));
+      return GridView.count(
+        crossAxisCount: 3,
+        childAspectRatio: 1.0,
+        mainAxisSpacing: 2.0,
+        crossAxisSpacing: 2.0,
+        shrinkWrap: true,
+        children: gridPosts,
+        physics: NeverScrollableScrollPhysics(),
+      );
+    } else {
+      // Column
+      List<PostView> postViews = [];
+      _posts.forEach((post) {
+        postViews.add(
+          PostView(
+            currentUserId: widget.currentUserId,
+            post: post,
+            author: _profileUser,
+          ),
+        );
+      });
+
+      return Column(
+        children: postViews,
+      );
+    }
   }
 
   @override
@@ -167,126 +369,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           User user = User.fromDoc(snapshot.data);
           return ListView(
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 0.0),
-                child: Row(
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 50.0,
-                      backgroundImage: user.profileImageUrl.isEmpty
-                          ? AssetImage(
-                              'assets/images/user_profile_placeholder.png')
-                          : CachedNetworkImageProvider(
-                              user.profileImageUrl,
-                            ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Column(
-                                children: <Widget>[
-                                  Text(
-                                    '$postCount',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Posts',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: <Widget>[
-                                  Text(
-                                    '$followerCount',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Followers',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: <Widget>[
-                                  Text(
-                                    '$followingCount',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Following',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 8.0,
-                          ),
-                          _displayUser(user),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30.0,
-                  vertical: 10.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      user.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5.0,
-                    ),
-                    Container(
-                      height: 80,
-                      child: Text(
-                        user.bio,
-                        style: TextStyle(
-                          fontSize: 15.0,
-                        ),
-                      ),
-                    ),
-                    Divider(),
-                    Center(
-                      child: FlatButton(
-                        color: Colors.blue,
-                        child: Text('Log out'),
-                        onPressed: () => AuthService.logout(),
-                      ),
-                    )
-                  ],
-                ),
-              ),
+              _buildProfile(user),
+              _buildToggleButtons(),
+              Divider(),
+              _buildDisplayPosts(),
             ],
           );
         },
